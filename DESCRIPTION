@@ -1,0 +1,18 @@
+Package: chainR
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Simon Garnier
+Maintainer: Simon Garnier <garnier@njit.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+  shiny (>= 0.14.2),
+  shinythemes (>= 1.1.1),
+  shinyFiles (>= 0.6.2),
+  dplyr (>= 0.5.0),
+  Rvision (>= 0.1.1)
+RoxygenNote: 5.0.1
