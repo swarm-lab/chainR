@@ -15,7 +15,8 @@ shinyServer(function(input, output, session) {
                                                   y1 = numeric(0),
                                                   x2 = numeric(0),
                                                   y2 = numeric(0)),
-                          the_success = 0)
+                          the_success = 0,
+                          the_range = list(x = NULL, y = NULL, zoom = FALSE))
 
   shinyFileChoose(input, "the_video", session = session,
                   roots = c(wd = normalizePath("~")))
@@ -77,16 +78,45 @@ shinyServer(function(input, output, session) {
             react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider])
           } else {
             react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider - 1])
-            react$the_points$frame <- the_frames[input$the_frame_slider]
+            if (nrow(react$the_points) > 0) {
+              react$the_points$frame <- the_frames[input$the_frame_slider]
+            }
           }
         }
       })
     }
   })
 
+  observeEvent(input$the_frame_brush, {
+    isolate({
+      brush <- input$the_frame_brush
+      if (!is.null(brush)) {
+        react$the_range$x <- c(brush$xmin, brush$xmax)
+        react$the_range$y <- c(brush$ymin, brush$ymax)
+        react$the_range$zoom <- TRUE
+      }
+    })
+  })
+
+  output$the_unzoom_button <- renderUI({
+    if (react$the_range$zoom) {
+      actionButton("the_unzoom", "Unzoom")
+    }
+  })
+
+  observe({
+    if (!is.null(input$the_unzoom) && (input$the_unzoom > 0)) {
+      isolate({
+        react$the_range$x <- NULL
+        react$the_range$y <- NULL
+        react$the_range$zoom <- FALSE
+      })
+    }
+  })
+
   output$the_frame <- renderPlot({
     if (!is.null(react$the_frame)) {
-      plot(react$the_frame)
+      plot(react$the_frame, xlim = react$the_range$x, ylim = react$the_range$y)
 
       if (nrow(react$the_points) > 0) {
         points(c(react$the_points$x1, react$the_points$x2),

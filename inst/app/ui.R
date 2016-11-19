@@ -7,6 +7,8 @@ shinyUI(
 
     tabPanel("-",
 
+             includeCSS("www/custom.css"),
+
              # Sidebar
              sidebarLayout(
                sidebarPanel(
@@ -29,7 +31,7 @@ shinyUI(
 
                  tags$hr(),
 
-                 div(style = "text-align:center;",
+                 div(id = "the_save_div",
                      actionButton("the_save", "Save data"),
                      textOutput("the_confirmation")
                  )
@@ -40,9 +42,16 @@ shinyUI(
                  width = 9,
 
                  wellPanel(
-                   div(style = "height: 60vh;",
+                   div(id = "the_frame_div",
                        plotOutput("the_frame", height = "100%",  width = "100%",
-                                  click = "the_frame_click"))
+                                  # click = "the_frame_click",
+                                  dblclick = "the_frame_click",
+                                  brush = brushOpts(
+                                    id = "the_frame_brush",
+                                    resetOnNew = TRUE
+                                  )),
+                       uiOutput("the_unzoom_button")
+                   )
                  ),
 
                  wellPanel(
