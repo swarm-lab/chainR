@@ -4,7 +4,7 @@ the_next_id <- 1
 the_mod <- 0
 the_mod_row <- NA
 the_last_success <- 0
-the_dat <- data.frame(frame = numeric(0), id = numeric(0), x1 = numeric(0),
+the_dat <- data.frame(id = numeric(0), x1 = numeric(0),
                       y1 = numeric(0), x2 = numeric(0), y2 = numeric(0),
                       start = numeric(0), end = numeric(0))
 
