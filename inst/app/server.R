@@ -132,8 +132,6 @@ shinyServer(function(input, output, session) {
     if (!is.null(react$the_frame)) {
       plot(react$the_frame, xlim = react$the_range$x, ylim = react$the_range$y)
 
-      print(the_dat)
-
       if (!is.null(react$the_points)) {
         points(c(react$the_points$x1, react$the_points$x2),
                c(react$the_points$y1, react$the_points$y2),
