@@ -44,13 +44,13 @@ shinyUI(
                  wellPanel(
                    div(id = "the_frame_div",
                        plotOutput("the_frame", height = "100%",  width = "100%",
-                                  # click = "the_frame_click",
                                   dblclick = "the_frame_click",
                                   brush = brushOpts(
                                     id = "the_frame_brush",
                                     resetOnNew = TRUE
                                   )),
-                       uiOutput("the_unzoom_button")
+                       uiOutput("the_unzoom_button"),
+                       textOutput("the_timer")
                    )
                  ),
 

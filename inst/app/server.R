@@ -5,17 +5,12 @@ the_mod <- 0
 the_mod_row <- NA
 the_last_success <- 0
 the_dat <- data.frame(frame = numeric(0), id = numeric(0), x1 = numeric(0),
-                      y1 = numeric(0), x2 = numeric(0), y2 = numeric(0))
+                      y1 = numeric(0), x2 = numeric(0), y2 = numeric(0),
+                      start = numeric(0), end = numeric(0))
 
 shinyServer(function(input, output, session) {
 
-  react <- reactiveValues(the_points = data.frame(frame = numeric(0),
-                                                  id = numeric(0),
-                                                  x1 = numeric(0),
-                                                  y1 = numeric(0),
-                                                  x2 = numeric(0),
-                                                  y2 = numeric(0)),
-                          the_success = 0,
+  react <- reactiveValues(the_success = 0,
                           the_range = list(x = NULL, y = NULL, zoom = FALSE))
 
   shinyFileChoose(input, "the_video", session = session,
@@ -71,16 +66,21 @@ shinyServer(function(input, output, session) {
         react$the_frame <- readFrame(react$the_video, the_frames[input$the_frame_slider])
 
         if (input$the_frame_slider == 1) {
-          react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider])
+          # react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider])
+          react$the_points <- filter(the_dat, (start <= the_frames[input$the_frame_slider]) &
+                                       (end > the_frames[input$the_frame_slider]))
         } else {
-          tmp <- filter(the_dat, frame == the_frames[input$the_frame_slider])
+          # tmp <- filter(the_dat, frame == the_frames[input$the_frame_slider])
+          tmp <- filter(the_dat, (start <= the_frames[input$the_frame_slider]) &
+                          (end > the_frames[input$the_frame_slider]))
           if (nrow(tmp) > 0) {
-            react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider])
+            react$the_points <- tmp
           } else {
-            react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider - 1])
-            if (nrow(react$the_points) > 0) {
-              react$the_points$frame <- the_frames[input$the_frame_slider]
-            }
+            react$the_points <- NULL
+            # react$the_points <- filter(the_dat, frame == the_frames[input$the_frame_slider - 1])
+            # if (nrow(react$the_points) > 0) {
+            #   react$the_points$frame <- the_frames[input$the_frame_slider]
+            # }
           }
         }
       })
@@ -114,11 +114,27 @@ shinyServer(function(input, output, session) {
     }
   })
 
+  output$the_timer <- renderText({
+    if (!is.null(react$the_video) & !is.null(input$the_frame_slider)) {
+      the_time <- the_frames[input$the_frame_slider] / fps(react$the_video)
+      the_floor_time <- floor(the_time)
+      the_img <- round(fps(react$the_video) * (the_time - the_floor_time))
+      the_period <- seconds_to_period(the_floor_time)
+      the_second <- sprintf("%02d", second(the_period))
+      the_minute <- sprintf("%02d", minute(the_period))
+      the_hour <- sprintf("%02d", hour(the_period))
+
+      paste0(the_hour, ":", the_minute, ":", the_second, ".", the_img)
+    }
+  })
+
   output$the_frame <- renderPlot({
     if (!is.null(react$the_frame)) {
       plot(react$the_frame, xlim = react$the_range$x, ylim = react$the_range$y)
 
-      if (nrow(react$the_points) > 0) {
+      print(the_dat)
+
+      if (!is.null(react$the_points)) {
         points(c(react$the_points$x1, react$the_points$x2),
                c(react$the_points$y1, react$the_points$y2),
                col = "red", pch = 19)
@@ -126,11 +142,6 @@ shinyServer(function(input, output, session) {
                  react$the_points$x2, react$the_points$y2,
                  col = "white", lwd = 2)
       }
-
-      isolate({
-        the_dat <<- filter(the_dat, frame != the_frames[input$the_frame_slider]) %>%
-          rbind(react$the_points)
-      })
     }
   })
 
@@ -145,7 +156,9 @@ shinyServer(function(input, output, session) {
                                                  id = the_next_id,
                                                  x1 = input$the_frame_click$x,
                                                  y1 = input$the_frame_click$y,
-                                                 x2 = NA, y2 = NA))
+                                                 x2 = NA, y2 = NA,
+                                                 start = the_frames[input$the_frame_slider],
+                                                 end = Inf))
             the_next_id <<- the_next_id + 1
             the_point <<- 2
           } else {
@@ -162,6 +175,10 @@ shinyServer(function(input, output, session) {
             the_column <- which.min(c(min(the_distance$d1, na.rm = TRUE),
                                       min(the_distance$d2, na.rm = TRUE)))
             the_row <- which.min(the_distance[, the_column])
+
+            react$the_points <- rbind(react$the_points, react$the_points[the_row, ])
+            react$the_points$start[the_row] <- the_frames[input$the_frame_slider]
+            react$the_points$end[nrow(react$the_points)] <- the_frames[input$the_frame_slider]
 
             if (the_column == 1) {
               react$the_points[the_row, ]$x1 <- NA
@@ -192,9 +209,17 @@ shinyServer(function(input, output, session) {
           the_column <- which.min(c(min(the_distance$d1, na.rm = TRUE),
                                     min(the_distance$d2, na.rm = TRUE)))
           the_row <- which.min(the_distance[, the_column])
-          react$the_points <- react$the_points[-the_row, ]
+          # react$the_points <- react$the_points[-the_row, ]
+          react$the_points$end[the_row] <- the_frames[input$the_frame_slider]
           the_point <<- 1
         }
+
+        the_dat <<- filter(the_dat, (start > the_frames[input$the_frame_slider]) |
+                             (end <= the_frames[input$the_frame_slider])) %>%
+          rbind(react$the_points)
+
+        react$the_points <- filter(the_dat, (start <= the_frames[input$the_frame_slider]) &
+                                     (end > the_frames[input$the_frame_slider]))
       })
     }
   })

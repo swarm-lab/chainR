@@ -9,5 +9,21 @@
 #the_unzoom {
   position: relative;
   left: 0;
-  bottom: 60vh; z-index: 999;
+  bottom: 60vh;
+  z-index: 999;
 }
+
+#the_timer {
+  position: relative;
+  left: 0;
+  bottom: 3vh;
+  display: inline-block;
+  z-index: 999;
+  background-color: #88888875;
+  color: #ffffff;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+
+
