@@ -14,12 +14,12 @@ shinyServer(function(input, output, session) {
                           the_range = list(x = NULL, y = NULL, zoom = FALSE))
 
   shinyFileChoose(input, "the_video", session = session,
-                  roots = c(wd = normalizePath("~")))
+                  roots = c(wd = normalizePath("/")))
 
   # Load video
   observe({
     if (!is.null(input$the_video)) {
-      path <- parseFilePaths(roots = c(wd = normalizePath("~")), input$the_video)
+      path <- parseFilePaths(roots = c(wd = normalizePath("/")), input$the_video)
 
       if (file.exists(paste0(as.character(path$datapath), ".csv"))) {
         the_dat <<- read.csv(paste0(as.character(path$datapath), ".csv"))
@@ -225,7 +225,7 @@ shinyServer(function(input, output, session) {
   # Save data
   observe({
     if (input$the_save > 0) {
-      path <- parseFilePaths(roots = c(wd = normalizePath("~")), input$the_video)
+      path <- parseFilePaths(roots = c(wd = normalizePath("/")), input$the_video)
       write.csv(the_dat, paste0(as.character(path$datapath), ".csv"), row.names = FALSE)
       isolate({
         react$the_success <- react$the_success + 1
