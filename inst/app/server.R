@@ -139,6 +139,16 @@ shinyServer(function(input, output, session) {
         segments(react$the_points$x1, react$the_points$y1,
                  react$the_points$x2, react$the_points$y2,
                  col = "white", lwd = 2)
+        if (any(!is.na(react$the_points$x2))) {
+          for (i in 1:nrow(react$the_points)) {
+            if (!is.na(react$the_points$x2[i])) {
+              legend((react$the_points$x1[i] + react$the_points$x2[i]) / 2,
+                     (react$the_points$y1[i] + react$the_points$y2[i]) / 2,
+                     react$the_points$id[i], box.col = "white", bg = "white",
+                     xjust = 0.5, yjust = 0.5, x.intersp = -0.5, y.intersp = -0.5)
+            }
+          }
+        }
       }
     }
   })
