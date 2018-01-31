@@ -1,5 +1,5 @@
 #' @export
 #'
-chainR <- function() {
-  shiny::runApp(appDir = system.file("app", package = "chainR"))
+chainR <- function(...) {
+  shiny::runApp(appDir = system.file("app", package = "chainR"), ...)
 }
